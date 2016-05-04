@@ -46,18 +46,14 @@ public class SQLService extends Service {
             String s = "wrong";
             try {
                 URL url = new URL("http://api.openweathermap.org/data/2.5/weather?id=2624652&appid=672e6780bb198824ed2d413b7c5244d2");
-                Log.d("lols", "first");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                Log.d("LOLS","second");
                 conn.setReadTimeout(1000);
                 conn.setConnectTimeout(15000);
                 conn.setRequestMethod("GET");
                 conn.setDoInput(true);
-                Log.d("LOLS", "Getting rdy to connect");
                 conn.connect();
-                Log.d("LOLS", "IT CONNECTED");
                 int response = conn.getResponseCode();
-                Log.d("DEBUGGGG", "IT IS: " + response);
+                if(response)
                 is = conn.getInputStream();
                 Log.d("LOL", "Got the inputString0");
                 s = readIt(is, len);
@@ -112,7 +108,5 @@ public class SQLService extends Service {
         char[] buffer = new char[len];
         reader.read(buffer);
         return new String(buffer);
-
-
     }
 }
