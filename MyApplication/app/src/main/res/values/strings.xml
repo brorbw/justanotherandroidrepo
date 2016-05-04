@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">WeatherAarhus7</string>
+    <string name="wannabe_string">Current:\nLort\n-24C</string>
+    <string name="haard_kode">PAST 24 HOURS</string>
 </resources>
