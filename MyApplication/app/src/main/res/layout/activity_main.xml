@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.larusaarhus.weatheraarhus7.MainActivity">
+
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -36,7 +41,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0px"
-        android:layout_weight="0.60">
+        android:layout_weight="0.6">
         <TextView
             android:layout_width="match_parent"
             android:layout_height="30dp"
@@ -48,11 +53,15 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@+id/textView"></ListView>
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_gravity="bottom|right"
-            android:src="@android:drawable/stat_notify_sync_noanim"/>
+
     </RelativeLayout>
 </LinearLayout>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="bottom|end"
+        android:src="@android:drawable/stat_notify_sync_noanim"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true" />
+</android.support.design.widget.CoordinatorLayout>
