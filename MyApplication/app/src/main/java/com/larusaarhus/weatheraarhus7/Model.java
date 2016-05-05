@@ -2,28 +2,32 @@ package com.larusaarhus.weatheraarhus7;
 
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * Created by brorbw on 04/05/16.
  */
 public class Model {
     private long id;
-    private Timestamp timestamp;
-    private double temp;
+    private String timestamp;
+    private long temp;
     private String description;
 
-    public Model(long id, Timestamp timestamp, double temp, String description) {
+    public Model(long id, String timestamp, long temp, String description) {
         this.id = id;
         this.timestamp = timestamp;
         this.temp = temp;
         this.description = description;
     }
 
-    public Timestamp getTimestamp() {
+    public Model() {
+    }
+
+    public String getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Timestamp timestamp) {
+    public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
 
@@ -31,7 +35,7 @@ public class Model {
         return temp;
     }
 
-    public void setTemp(double temp) {
+    public void setTemp(long temp) {
         this.temp = temp;
     }
 
