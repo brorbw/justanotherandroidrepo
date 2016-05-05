@@ -25,8 +25,10 @@ public class DBHelper extends SQLiteOpenHelper{
     private static final String KEY_TEMP = "temp";
 
     private static final String CREATE_TABLE = "CREATE TABLE "
-            + TABLE_NAME + "("+ KEY_ID + " INTEGER PRIMARY KEY," + KEY_DESCRIPTION
+            + TABLE_NAME + "("+ KEY_ID + " LONG PRIMARY KEY," + KEY_DESCRIPTION
             + " TEXT," + KEY_DATE + " DATETIME," + KEY_TEMP + " LONG)";
+
+
     public DBHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -49,7 +51,7 @@ public class DBHelper extends SQLiteOpenHelper{
         values.put(KEY_TEMP, model.getTemp());
         values.put(KEY_DATE, model.getTimestamp());
 
-        long weather_id = db.insert(TABLE_NAME, null,values);
+        long weather_id = db.insert(TABLE_NAME, null, values);
 
         return weather_id;
     }
@@ -60,14 +62,13 @@ public class DBHelper extends SQLiteOpenHelper{
         return initiateModel(giveTheCurser(selectQuery));
     }
 
-    public List<Model> getAllModel(){
+    public List<Model> getAllModels(){
         List<Model> models = new ArrayList<Model>();
         String selectQuery = "SELECT * FROM " + TABLE_NAME;
         Cursor c = giveTheCurser(selectQuery);
         if(c.moveToFirst()){
             for(int i = 0; i < 48; i++){
-                models.add(initiateModel(c));
-                c.moveToNext();
+                if(c.moveToNext()) models.add(initiateModel(c));
             }
         }
         return models;

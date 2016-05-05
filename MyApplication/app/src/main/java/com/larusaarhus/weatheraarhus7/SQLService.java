@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.android.volley.Request;
@@ -26,16 +27,14 @@ import java.util.Locale;
  * Created by brorbw on 04/05/16.
  */
 public class SQLService extends Service {
+    private DBHelper dbHelper;
     private long mIndex = 0;
     private String url = "http://api.openweathermap.org/data/2.5/weather?id=2624652&appid=672e6780bb198824ed2d413b7c5244d2";
 
     @Override
     public void onCreate() {
         super.onCreate();
-        AsyncTask mTask = new MyTask();
-        SharedPreferences sharedPreferences = getSharedPreferences(MainActivity.PREF, Context.MODE_PRIVATE);
-        mIndex = sharedPreferences.getLong(MainActivity.ID,0);
-        mTask.execute();
+
     }
 
     @Override
@@ -49,8 +48,13 @@ public class SQLService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return super.onStartCommand(intent, flags, startId);
-
+        super.onStartCommand(intent, flags, startId);
+        AsyncTask mTask = new MyTask();
+        SharedPreferences sharedPreferences = getSharedPreferences(MainActivity.PREF, Context.MODE_PRIVATE);
+        dbHelper = new DBHelper(getApplicationContext());
+        mIndex = sharedPreferences.getLong(MainActivity.ID,0);
+        mTask.execute();
+        return START_STICKY;
     }
 
     @Nullable
@@ -67,17 +71,19 @@ public class SQLService extends Service {
                 Model mModel = new Model();
                 try {
                     Log.d("JSON", "Getting weather data");
-                    mModel.setDescription(jsonObject.getJSONArray("weather").getJSONObject(0).getString("description").toString());
+                    mModel.setDescription(jsonObject.getJSONArray("weather").getJSONObject(0).getString("description"));
                     mIndex++;
                     mModel.setId(mIndex);
-                    mModel.setTemp(Long.parseLong(jsonObject.getJSONObject("main").getString("temp")));
+                    mModel.setTemp((long)(Double.parseDouble(jsonObject.getJSONObject("main").getString("temp"))-273.15));
                     String date = parseDateTime();
                     Log.d("D/I: ", date + " : " + mIndex);
                     mModel.setTimestamp(parseDateTime());
-                } catch (JSONException e){
+                    Log.d("SQLservice", mModel.toString());
+                    dbHelper.createWeather(mModel);
+                    sendLocalBroadcast();
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
             }
         }, new Response.ErrorListener() {
             @Override
@@ -110,5 +116,13 @@ public class SQLService extends Service {
                 "yyyy-MM-dd HH:mm:ss", Locale.getDefault()
         );
         return format.format(date);
+    }
+
+    private void sendLocalBroadcast(){
+        Intent broadcastIntent = new Intent();
+
+        broadcastIntent.setAction(MainActivity.ACTION);
+        Log.d("Service", "Recived net weather data");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
     }
 }
