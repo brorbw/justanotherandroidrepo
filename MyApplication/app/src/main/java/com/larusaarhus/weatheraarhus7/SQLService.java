@@ -101,7 +101,7 @@ public class SQLService extends Service {
             while(true){
                 doInBackgroundThing();
                 try{
-                    Thread.sleep(30*60*1000);
+                    Thread.sleep( 1000);
                 } catch (InterruptedException e){
                     e.printStackTrace();
                     return null;
