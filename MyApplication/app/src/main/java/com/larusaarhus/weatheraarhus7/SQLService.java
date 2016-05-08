@@ -1,12 +1,13 @@
 package com.larusaarhus.weatheraarhus7;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.IBinder;
-import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -27,6 +28,7 @@ import java.util.Locale;
  * Created by brorbw on 04/05/16.
  */
 public class SQLService extends Service {
+    public static boolean isRunning = false;
     private DBHelper dbHelper;
     private long mIndex = 0;
     private String url = "http://api.openweathermap.org/data/2.5/weather?id=2624652&appid=672e6780bb198824ed2d413b7c5244d2";
@@ -44,6 +46,8 @@ public class SQLService extends Service {
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putLong(MainActivity.ID, mIndex);
         editor.commit();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(listener);
+        isRunning = false;
     }
 
     @Override
@@ -54,6 +58,10 @@ public class SQLService extends Service {
         dbHelper = new DBHelper(getApplicationContext());
         mIndex = sharedPreferences.getLong(MainActivity.ID,0);
         mTask.execute();
+        isRunning = true;
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(MainActivity.UPDATE);
+        LocalBroadcastManager.getInstance(this).registerReceiver(listener,filter);
         return START_STICKY;
     }
 
@@ -80,6 +88,10 @@ public class SQLService extends Service {
                     mModel.setTimestamp(parseDateTime());
                     Log.d("SQLservice", mModel.toString());
                     dbHelper.createWeather(mModel);
+                    SharedPreferences sharedPref = getSharedPreferences(MainActivity.PREF, Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putLong(MainActivity.ID, mIndex);
+                    editor.apply();
                     sendLocalBroadcast();
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -90,8 +102,7 @@ public class SQLService extends Service {
             public void onErrorResponse(VolleyError volleyError) {
 
             }
-        }
-        );
+        });
         Singleton.getInstance(this).add(jsonObjectRequest);
     }
     private class MyTask extends AsyncTask<Object,Object,Object>{
@@ -101,7 +112,7 @@ public class SQLService extends Service {
             while(true){
                 doInBackgroundThing();
                 try{
-                    Thread.sleep( 1000);
+                    Thread.sleep(30*60*1000);
                 } catch (InterruptedException e){
                     e.printStackTrace();
                     return null;
@@ -121,8 +132,16 @@ public class SQLService extends Service {
     private void sendLocalBroadcast(){
         Intent broadcastIntent = new Intent();
 
-        broadcastIntent.setAction(MainActivity.ACTION);
+        broadcastIntent.setAction(MainActivity.RECIVE);
         Log.d("Service", "Recived net weather data");
         LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
     }
+
+
+    private BroadcastReceiver listener = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            doInBackgroundThing();
+        }
+    };
 }

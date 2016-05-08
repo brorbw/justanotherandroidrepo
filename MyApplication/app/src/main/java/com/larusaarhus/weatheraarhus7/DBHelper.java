@@ -50,6 +50,7 @@ public class DBHelper extends SQLiteOpenHelper{
         values.put(KEY_DESCRIPTION, model.getDescription());
         values.put(KEY_TEMP, model.getTemp());
         values.put(KEY_DATE, model.getTimestamp());
+        model.bigPrint();
 
         long weather_id = db.insert(TABLE_NAME, null, values);
 
@@ -61,14 +62,24 @@ public class DBHelper extends SQLiteOpenHelper{
         Log.d(LOG, selectQuery);
         return initiateModel(giveTheCurser(selectQuery));
     }
+    public Model getModel(Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(MainActivity.PREF,Context.MODE_PRIVATE);
+        String model_id = ((Long)(sharedPreferences.getLong(MainActivity.ID,0))).toString();
+        String selectQuery = "SELECT * FROM " + TABLE_NAME + " WHERE " + KEY_ID +
+                " = " + model_id;
+        Log.d(LOG, selectQuery);
+        return initiateModel(giveTheCurser(selectQuery));
+    }
 
     public List<Model> getAllModels(){
         List<Model> models = new ArrayList<Model>();
         String selectQuery = "SELECT * FROM " + TABLE_NAME;
         Cursor c = giveTheCurser(selectQuery);
-        if(c.moveToFirst()){
+        if(c.moveToLast()){
             for(int i = 0; i < 48; i++){
-                if(c.moveToNext()) models.add(initiateModel(c));
+                if(c.moveToPrevious()){
+                    models.add(initiateModel(c));
+                }
             }
         }
         return models;
@@ -80,6 +91,7 @@ public class DBHelper extends SQLiteOpenHelper{
         Cursor c = db.rawQuery(query,null);
         if(c != null){
             c.moveToFirst();
+        } else {
             Log.wtf(LOG, "SOMETHING TERRIBLE HAPPEND");
         }
         return c;
