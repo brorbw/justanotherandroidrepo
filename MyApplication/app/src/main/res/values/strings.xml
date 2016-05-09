@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WeatherAarhus7</string>
+    <string name="app_name">WeatherAarhusGroup7</string>
     <string name="placeholder_string">Server Error\nUnable to get data</string>
     <string name="haard_kode">PAST 24 HOURS</string>
     <string name="current">Current:</string>
