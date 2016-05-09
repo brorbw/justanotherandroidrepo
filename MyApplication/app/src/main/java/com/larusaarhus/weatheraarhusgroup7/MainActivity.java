@@ -30,17 +30,29 @@ public class MainActivity extends AppCompatActivity {
     private ListView listView;
     private DBHelper dbHelper;
     private ModelAdapter adapter;
+    private boolean isItFirst = false;
 
 
     private BroadcastReceiver listener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             //Do something with the database update ui
-            adapter.setModels(getDatabaseHelper().getAllModels());
-            ((BaseAdapter)listView.getAdapter()).notifyDataSetChanged();
-            upDateTextFeild();
+            if(!isItFirst){
+                isItFirst = true;
+                SharedPreferences shared = getSharedPreferences(PREF, Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = shared.edit();
+                editor.putBoolean(FIRST,isItFirst);
+                editor.commit();
+            }
+            updateUi();
         }
     };
+
+    public void updateUi(){
+        adapter.setModels(getDatabaseHelper().getAllModels());
+        ((BaseAdapter)listView.getAdapter()).notifyDataSetChanged();
+        upDateTextFeild();
+    }
 
     public void upDateTextFeild(){
         TextView textView = (TextView) findViewById(R.id.textmain);
@@ -79,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(listener);
     }
-
+    public int test = 0;
     @Override
     protected void onResume() {
         super.onResume();
@@ -87,13 +99,11 @@ public class MainActivity extends AppCompatActivity {
         filter.addAction(RECIVE);
         LocalBroadcastManager.getInstance(this).registerReceiver(listener, filter);
         SharedPreferences shared = getSharedPreferences(PREF, Context.MODE_PRIVATE);
-        boolean isFirst = shared.getBoolean(FIRST, true);
-        if(!isFirst){
-            upDateTextFeild();
-        } else {
-            SharedPreferences.Editor editor = shared.edit();
-            editor.putBoolean(FIRST,false);
-            editor.apply(); //Using apply because the data is not vital and and UI is more important
+        isItFirst = shared.getBoolean(FIRST, false);
+
+
+        if(isItFirst){
+            updateUi();
         }
 
     }
