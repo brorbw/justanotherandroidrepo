@@ -29,22 +29,33 @@
                 android:text="A Task"
                 android:layout_marginTop="10dp"
                 android:id="@+id/des" />
-            <TextView
-                android:textColor="@color/secondary_text"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Small Text"
-                android:id="@+id/tmp"/>
-        </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:layout_height="match_parent">
 
-        <TextView
-            android:textColor="@color/secondary_text"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Small Text"
-            android:id="@+id/date" />
+                <TextView
+                    android:textColor="@color/secondary_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="Small Text"
+                    android:id="@+id/tmp"
+                    android:layout_marginRight="20dp"/>
+
+                <TextView
+                    android:textColor="@color/secondary_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="Small Text"
+                    android:id="@+id/date" />
+            </LinearLayout>
+            </LinearLayout>
+
+
+
+
     </LinearLayout>
 
 </RelativeLayout>

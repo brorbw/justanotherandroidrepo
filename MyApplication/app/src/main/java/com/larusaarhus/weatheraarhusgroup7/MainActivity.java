@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         String temp = ((Double)model.getTemp()).toString();
         String description = model.getDescription();
         if(temp != null && description != null) {
-            textView.setText("Current:\n" + description + "\n" + temp + "°C");
+            textView.setText(description + "\n" + temp + "°C");
         }
     }
 
