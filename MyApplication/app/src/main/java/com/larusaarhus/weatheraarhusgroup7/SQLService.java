@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -22,6 +23,7 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -29,6 +31,7 @@ import java.util.Locale;
  */
 public class SQLService extends Service {
     public static boolean isRunning = false;
+    private final IBinder mBinder = new LocalBinder();
     private DBHelper dbHelper;
     private long mIndex = 0;
     private String url = "http://api.openweathermap.org/data/2.5/weather?id=2624652&appid=672e6780bb198824ed2d413b7c5244d2";
@@ -65,10 +68,9 @@ public class SQLService extends Service {
         return START_STICKY;
     }
 
-    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-         return null;
+        return mBinder;
     }
 
     private void doInBackgroundThing(){
@@ -112,7 +114,8 @@ public class SQLService extends Service {
             while(true){
                 doInBackgroundThing();
                 try{
-                    Thread.sleep(30*60*1000);
+                    //Thread.sleep(30*60*1000);
+                    Thread.sleep(30*500);
                 } catch (InterruptedException e){
                     e.printStackTrace();
                     return null;
@@ -144,4 +147,20 @@ public class SQLService extends Service {
             doInBackgroundThing();
         }
     };
+
+
+
+    public class LocalBinder extends Binder {
+        SQLService getService() {
+            // Return this instance of LocalService so clients can call public methods
+            return SQLService.this;
+        }
+    }
+
+    public Model getCurrentWeather(){
+        return dbHelper.getModel(this);
+    }
+    public List<Model> getPastWeather(){
+        return dbHelper.getAllModels();
+    }
 }

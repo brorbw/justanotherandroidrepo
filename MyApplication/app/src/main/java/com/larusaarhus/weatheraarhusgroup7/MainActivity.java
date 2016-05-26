@@ -2,10 +2,13 @@ package com.larusaarhus.weatheraarhusgroup7;
 
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -28,9 +31,13 @@ public class MainActivity extends AppCompatActivity {
     public static final String UPDATE = "com.larusaarhus.weather7.UPDATE";
     public static final String FIRST = "com.larusaarhus.weather7.FIRST";
     private ListView listView;
-    private DBHelper dbHelper;
     private ModelAdapter adapter;
+    private List<Model> past;
+    private Model model;
+    private boolean isAdapter = false;
     private boolean isItFirst = false;
+    SQLService mService;
+    boolean mBound = false;
 
 
     private BroadcastReceiver listener = new BroadcastReceiver() {
@@ -49,14 +56,19 @@ public class MainActivity extends AppCompatActivity {
     };
 
     public void updateUi(){
-        adapter.setModels(getDatabaseHelper().getAllModels());
-        ((BaseAdapter)listView.getAdapter()).notifyDataSetChanged();
-        upDateTextFeild();
+        if(mBound){
+            past = mService.getPastWeather();
+
+                adapter.setModels(past);
+                ((BaseAdapter)listView.getAdapter()).notifyDataSetChanged();
+                upDateTextFeild();
+        }
+
     }
 
     public void upDateTextFeild(){
         TextView textView = (TextView) findViewById(R.id.textmain);
-        Model model = dbHelper.getModel(getApplicationContext());
+        model = mService.getCurrentWeather();
         String temp = ((Double)model.getTemp()).toString();
         String description = model.getDescription();
         if(temp != null && description != null) {
@@ -68,43 +80,61 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        listView = (ListView) findViewById(R.id.list);
-        adapter = new ModelAdapter(this,getDatabaseHelper().getAllModels());
-        listView.setAdapter(adapter);
         Intent mIntent = new Intent(this, SQLService.class);
-
-
         if(!SQLService.isRunning) {
             Log.d("Main", "Is Running : " + SQLService.isRunning);
             startService(mIntent);
         }
+        listView = (ListView) findViewById(R.id.list);
+        adapter = new ModelAdapter(this,past);
+        isAdapter = true;
+        listView.setAdapter(adapter);
+        updateUi();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        // Bind to LocalService
+        Intent intent = new Intent(this, SQLService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
+            if(mBound){
+                past = mService.getPastWeather();
+            }
+            adapter.setModels(past);
+           ((BaseAdapter)listView.getAdapter()).notifyDataSetChanged();
+             updateUi();
 
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        // Unbind from the service
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
+    }
+
+
+
+
+
+
+
+
+    @Override
     protected void onPause() {
         super.onPause();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(listener);
+
     }
     public int test = 0;
     @Override
     protected void onResume() {
         super.onResume();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(RECIVE);
-        LocalBroadcastManager.getInstance(this).registerReceiver(listener, filter);
-        SharedPreferences shared = getSharedPreferences(PREF, Context.MODE_PRIVATE);
-        isItFirst = shared.getBoolean(FIRST, false);
 
-
-        if(isItFirst){
-            updateUi();
-        }
 
     }
 
@@ -112,7 +142,6 @@ public class MainActivity extends AppCompatActivity {
         private List<Model> models;
         private Context context;
 
-        Model model;
 
         public ModelAdapter(Context context, List<Model> models){
             this.context = context;
@@ -159,19 +188,10 @@ public class MainActivity extends AppCompatActivity {
             }
             return null;
         }
-        public List<Model> getModels() {
-            return models;
-        }
 
         public void setModels(List<Model> tasks) {
             this.models = tasks;
         }
-    }
-    public DBHelper getDatabaseHelper(){
-        if(dbHelper == null){
-            dbHelper = new DBHelper(getApplicationContext());
-        }
-        return dbHelper;
     }
 
     public void update(View view){
@@ -180,4 +200,37 @@ public class MainActivity extends AppCompatActivity {
         Log.d("Service", "Recived net weather data");
         LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
     }
+
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            SQLService.LocalBinder binder = (SQLService.LocalBinder) service;
+            mService = binder.getService();
+            mBound = true;
+            Log.d("mCOnnection", "" + mBound);
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(RECIVE);
+            LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(listener, filter);
+            SharedPreferences shared = getSharedPreferences(PREF, Context.MODE_PRIVATE);
+            isItFirst = shared.getBoolean(FIRST, false);
+
+
+            if(isItFirst){
+                updateUi();
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(listener);
+            mBound = false;
+        }
+
+    };
+
+
 }
